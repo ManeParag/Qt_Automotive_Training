@@ -1,0 +1,102 @@
+# ============================================================
+# Qt / C++ build artifacts
+# ============================================================
+build-*/
+*.o
+*.obj
+*.lo
+*.la
+*.al
+*.libs
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.exp
+*.ilk
+*.lib
+*.pdb
+*.idb
+*.lnk
+
+# qmake-generated files
+Makefile*
+!Makefile.am
+*.pro.user
+*.pro.user.*
+*.qmake.cache
+*.qmake.stash
+.qmake.stash
+.qmake.cache
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*_qmlcache.qrc
+*_qmltyperegistrations.cpp
+
+# CMake-generated files (in case anyone switches to CMake later)
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CMakeUserPresets.json
+CTestTestfile.cmake
+install_manifest.txt
+*.cmake
+!CMakeLists.txt
+
+# ============================================================
+# Qt Creator / IDE files
+# ============================================================
+*.autosave
+*.user
+*.user.*
+*.bak
+.qtc_clangd/
+.vs/
+.vscode/
+*.suo
+*.sln.docstates
+*.code-workspace
+
+# JetBrains
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# ============================================================
+# OS-specific
+# ============================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.Trash-*
+
+# ============================================================
+# Logs / Local data (trainees may generate these)
+# ============================================================
+*.log
+*.tmp
+*.csv
+!data/sample-telemetry.csv
+
+# ============================================================
+# Documentation build output
+# ============================================================
+docs/_build/
+docs/html/
