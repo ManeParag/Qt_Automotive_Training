@@ -3,7 +3,7 @@
 > Your starting point. Understand what Qt is, why automotive teams pick it, get it installed, and learn your way around the IDE.
 
 | Phase | Level | Time | Qt modules |
-| --- | --- | --- | --- |
+| :---- | :---- | :--- | :--------- |
 | Phase 1 — Qt Fundamentals | Beginner | 1.5 hours | Qt Core · Qt Widgets |
 
 ---
@@ -52,14 +52,14 @@ Qt has become the **de facto standard** for in-vehicle software UIs. When you si
 
 ### Why automotive picks Qt
 
-| Need | How Qt addresses it |
-| --- | --- |
-| Single codebase for cluster + IVI + HUD | One Qt project targets multiple displays |
-| 60 fps animations on embedded hardware | Hardware-accelerated rendering via OpenGL / Vulkan |
-| Long product lifecycle (10+ years) | LTS releases, commercial support, stable API |
-| Functional safety certification | Qt Safe Renderer is ISO 26262 ASIL-B certified |
-| Multi-language (i18n) support | Built-in translation system, RTL languages, font handling |
-| Boot-time constraints | Qt for MCUs and Qt Quick Compiler reduce startup latency |
+| Need                                          | How Qt addresses it                                          |
+| :-------------------------------------------- | :----------------------------------------------------------- |
+| Single codebase for cluster + IVI + HUD       | One Qt project targets multiple displays                     |
+| 60 fps animations on embedded hardware        | Hardware-accelerated rendering via OpenGL / Vulkan           |
+| Long product lifecycle (10+ years)            | LTS releases, commercial support, stable API                 |
+| Functional safety certification               | Qt Safe Renderer is ISO 26262 ASIL-B certified               |
+| Multi-language (i18n) support                 | Built-in translation system, RTL languages, font handling    |
+| Boot-time constraints                         | Qt for MCUs and Qt Quick Compiler reduce startup latency     |
 
 ### Where Qt fits in a typical car
 
@@ -87,9 +87,7 @@ Throughout this training we use plain **open-source Qt 6** running on a normal d
 
 ## 3. Installation
 
-We use **Qt 6.1** with the open-source license. Total install size is around 10–12 GB.
-
-> **Note:** Qt 6.1 is a non-LTS release (released May 2021). If you have flexibility on version choice, Qt 6.2 LTS or Qt 6.5 LTS are recommended for long-term work. The training material itself works on Qt 6.1 without changes.
+We use **Qt 6.5 LTS or newer** with the open-source license. Total install size is around 10–12 GB.
 
 ### Step 1 — Create a Qt account
 
@@ -103,18 +101,16 @@ The same page provides a small installer for your OS (Windows / Linux / macOS). 
 
 When the installer asks what to install, **tick at minimum**:
 
-- ✅ **Qt 6.1**
-  * ✅ **MSVC 2019 64-bit** *(Windows — preferred)* OR **MinGW 8.1.0 64-bit** *(Windows — alternative)*
-  * ✅ **GCC 64-bit** *(Linux)*
-  * ✅ **macOS** *(Mac)*
-  * ✅ **Qt Charts** *(needed for charting modules)*
-  * ✅ **Qt Debug Information Files** *(helps with debugging — optional but recommended)*
+- ✅ **Qt 6.5** *(or the latest LTS shown)*
+  - ✅ **MSVC 2019 64-bit** *(Windows — preferred)* OR **MinGW 11.2 64-bit** *(Windows — alternative)*
+  - ✅ **GCC 64-bit** *(Linux)*
+  - ✅ **macOS** *(Mac)*
+  - ✅ **Qt Charts** *(needed for charting modules)*
+  - ✅ **Qt Debug Information Files** *(helps with debugging — optional but recommended)*
 - ✅ **Qt Creator** *(the IDE — usually pre-selected)*
 - ✅ **CMake** and **Ninja** *(build tools — usually pre-selected)*
 
 You can leave everything else at defaults. Coffee break — install takes 20–40 minutes depending on your internet speed.
-
-> **If Qt 6.1 isn't shown in the installer:** newer online installers sometimes hide older versions by default. Tick **"Archive"** in the *Categories* panel on the right side of the components screen and click **Filter** — Qt 6.1 will appear in the list.
 
 ### Step 4 — Verify the install
 
@@ -130,7 +126,7 @@ Open `01-qt-creator-ide/HelloAutoHMI/HelloAutoHMI.pro` from this repo in Qt Crea
 
 If a window titled *"Hello AutoHMI"* appears with a button on it, your toolchain is working. ✅
 
-For OS-specific notes and troubleshooting, see [`SETUP.md`](https://github.com/ManeParag/Qt_Automotive_Training/blob/main/SETUP.md) at the repo root.
+For OS-specific notes and troubleshooting, see [`SETUP.md`](../SETUP.md) at the repo root.
 
 ---
 
@@ -184,31 +180,36 @@ Open any of the starter projects in this repo and you'll see a handful of files.
 
 This is the **manifest**. qmake reads it to figure out what to compile and how. Typical contents:
 
-    QT       += core gui widgets   # which Qt modules this app uses
-    CONFIG   += c++17              # use C++17
-    TARGET    = HelloAutoHMI       # name of the output executable
-    TEMPLATE  = app                # we're building an application
+```pro
+QT       += core gui widgets   # which Qt modules this app uses
+CONFIG   += c++17              # use C++17
+TARGET    = HelloAutoHMI       # name of the output executable
+TEMPLATE  = app                # we're building an application
 
-    SOURCES  += main.cpp mainwindow.cpp
-    HEADERS  += mainwindow.h
-    FORMS    += mainwindow.ui
+SOURCES  += main.cpp mainwindow.cpp
+HEADERS  += mainwindow.h
+FORMS    += mainwindow.ui
+```
 
 When you add a new `.cpp` or `.h` file to your project, you list it here. Right-clicking *Add New…* in Qt Creator handles this for you automatically.
+
 > 📘 **Reference:** [qmake Manual](https://doc.qt.io/qt-6/qmake-manual.html) · [Qt build system overview](https://doc.qt.io/qt-6/build-system-overview.html)
 
 ### `main.cpp` — the entry point
 
 Every Qt app starts here. Tiny on purpose:
 
-    #include <QApplication>
-    #include "mainwindow.h"
+```cpp
+#include <QApplication>
+#include "mainwindow.h"
 
-    int main(int argc, char *argv[]) {
-        QApplication app(argc, argv);   // initializes Qt
-        MainWindow w;                   // creates the main window
-        w.show();                       // shows it
-        return app.exec();              // enters the event loop
-    }
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);   // initializes Qt
+    MainWindow w;                   // creates the main window
+    w.show();                       // shows it
+    return app.exec();              // enters the event loop
+}
+```
 
 `QApplication` is the Qt runtime. `app.exec()` runs the event loop that handles mouse clicks, key presses, timers, and signals — control returns from `exec()` only when the app quits.
 
@@ -229,7 +230,9 @@ You don't have to use a `.ui` file — many of the modules in this repo build th
 ### Build output
 
 When you build, Qt Creator creates a `build-<projectname>-<kit>-Debug/` folder next to your project. The compiled executable lives inside. Delete this folder anytime to force a clean rebuild — it'll be recreated.
+
 > 📘 **Reference:** [Qt application structure](https://doc.qt.io/qt-6/qtwidgets-tutorials-notepad-example.html) · [Object model & QObject](https://doc.qt.io/qt-6/object.html)
+
 ---
 
 ## 6. Official Documentation Map
@@ -238,54 +241,54 @@ The Qt documentation is excellent but vast. Here are the pages that actually mat
 
 ### Start here
 
-| Resource | What it gives you |
-| --- | --- |
-| [Qt 6 documentation root](https://doc.qt.io/qt-6/) | Top-level index of everything — module list, class reference |
-| [Getting Started with Qt](https://doc.qt.io/qt-6/gettingstarted.html) | Official onboarding — read this once cover-to-cover |
-| [Qt Creator Manual](https://doc.qt.io/qtcreator/) | The IDE's full manual — searchable, well-indexed |
-| [Qt Examples and Tutorials](https://doc.qt.io/qt-6/qtexamplesandtutorials.html) | Hundreds of working sample apps |
+| Resource                                | What it gives you                                                |
+| :-------------------------------------- | :--------------------------------------------------------------- |
+| [Qt 6 documentation root](https://doc.qt.io/qt-6/) | Top-level index of everything — module list, class reference     |
+| [Getting Started with Qt](https://doc.qt.io/qt-6/gettingstarted.html) | Official onboarding — read this once cover-to-cover  |
+| [Qt Creator Manual](https://doc.qt.io/qtcreator/) | The IDE's full manual — searchable, well-indexed                  |
+| [Qt Examples and Tutorials](https://doc.qt.io/qt-6/qtexamplesandtutorials.html) | Hundreds of working sample apps          |
 
 ### Core concepts
 
-| Resource | When to read it |
-| --- | --- |
-| [Object Model](https://doc.qt.io/qt-6/object.html) | Understanding parent-child ownership, QObject basics |
+| Resource                                | When to read it                                                  |
+| :-------------------------------------- | :--------------------------------------------------------------- |
+| [Object Model](https://doc.qt.io/qt-6/object.html)             | Understanding parent-child ownership, QObject basics |
 | [Signals & Slots](https://doc.qt.io/qt-6/signalsandslots.html) | The mechanism that ties Qt apps together (Module 03) |
-| [Qt Properties](https://doc.qt.io/qt-6/properties.html) | `Q_PROPERTY`, used heavily in custom widgets |
-| [Event System](https://doc.qt.io/qt-6/eventsandfilters.html) | How Qt delivers mouse/keyboard/paint events |
+| [Qt Properties](https://doc.qt.io/qt-6/properties.html)        | `Q_PROPERTY`, used heavily in custom widgets         |
+| [Event System](https://doc.qt.io/qt-6/eventsandfilters.html)   | How Qt delivers mouse/keyboard/paint events          |
 
 ### Widgets reference
 
-| Resource | What it gives you |
-| --- | --- |
-| [Qt Widgets index](https://doc.qt.io/qt-6/qtwidgets-index.html) | Overview of the widgets module |
-| [Widget Classes](https://doc.qt.io/qt-6/widget-classes.html) | List of every standard widget |
-| [Layout Management](https://doc.qt.io/qt-6/layout.html) | How to compose UIs with box & grid layouts |
-| [Style Sheets Reference](https://doc.qt.io/qt-6/stylesheet-reference.html) | All QSS selectors and properties |
+| Resource                                | What it gives you                                                |
+| :-------------------------------------- | :--------------------------------------------------------------- |
+| [Qt Widgets index](https://doc.qt.io/qt-6/qtwidgets-index.html) | Overview of the widgets module                  |
+| [Widget Classes](https://doc.qt.io/qt-6/widget-classes.html)    | List of every standard widget                   |
+| [Layout Management](https://doc.qt.io/qt-6/layout.html)         | How to compose UIs with box & grid layouts      |
+| [Style Sheets Reference](https://doc.qt.io/qt-6/stylesheet-reference.html) | All QSS selectors and properties     |
 
 ### Build system
 
-| Resource | What it gives you |
-| --- | --- |
-| [qmake Manual](https://doc.qt.io/qt-6/qmake-manual.html) | Everything about `.pro` files |
-| [CMake with Qt](https://doc.qt.io/qt-6/cmake-manual.html) | Modern alternative to qmake |
+| Resource                                | What it gives you                                                |
+| :-------------------------------------- | :--------------------------------------------------------------- |
+| [qmake Manual](https://doc.qt.io/qt-6/qmake-manual.html)        | Everything about `.pro` files                   |
+| [CMake with Qt](https://doc.qt.io/qt-6/cmake-manual.html)       | Modern alternative to qmake                     |
 
 ### Automotive resources
 
-| Resource | What it gives you |
-| --- | --- |
-| [Qt for Automotive](https://www.qt.io/product/automotive) | Commercial automotive offering overview |
-| [Qt Auto](https://www.qt.io/qt-auto) | Newer initiative for next-gen automotive platforms |
+| Resource                                | What it gives you                                                |
+| :-------------------------------------- | :--------------------------------------------------------------- |
+| [Qt for Automotive](https://www.qt.io/product/automotive)       | Commercial automotive offering overview         |
+| [Qt Auto](https://www.qt.io/qt-auto)                            | Newer initiative for next-gen automotive platforms |
 | [Qt Wiki — Qt for Automotive](https://wiki.qt.io/Qt_for_Automotive) | Community wiki, links to demos and projects |
-| [Qt Safe Renderer](https://doc.qt.io/QtSafeRenderer/) | Safety-certified rendering for ISO 26262 |
+| [Qt Safe Renderer](https://doc.qt.io/QtSafeRenderer/)           | Safety-certified rendering for ISO 26262        |
 
 ### Community
 
-| Resource | What it's good for |
-| --- | --- |
-| [Qt Forum](https://forum.qt.io/) | Active community Q&A — most beginner questions are already answered here |
-| [Qt Wiki](https://wiki.qt.io/) | Tips, tricks, less-formal articles |
-| [KDAB Blog](https://www.kdab.com/blog/) | Qt consultancy with deep technical posts |
+| Resource                                | What it's good for                                               |
+| :-------------------------------------- | :--------------------------------------------------------------- |
+| [Qt Forum](https://forum.qt.io/)        | Active community Q&A — most beginner questions are already answered here |
+| [Qt Wiki](https://wiki.qt.io/)          | Tips, tricks, less-formal articles                               |
+| [KDAB Blog](https://www.kdab.com/blog/) | Qt consultancy with deep technical posts                         |
 
 ---
 
@@ -297,8 +300,8 @@ Things that bite every Qt newcomer. If you hit one of these, don't panic.
 
 Your shell doesn't know where Qt installed `qmake`. Fix by adding Qt's bin folder to your `PATH`:
 
-- **Windows:** add `C:\Qt\6.1.x\msvc2019_64\bin` (adjust to your version) to System Environment Variables → PATH
-- **Linux/Mac:** `export PATH="$HOME/Qt/6.1.x/gcc_64/bin:$PATH"` in your `.bashrc` or `.zshrc`
+- **Windows:** add `C:\Qt\6.5.x\msvc2019_64\bin` (adjust to your version) to System Environment Variables → PATH
+- **Linux/Mac:** `export PATH="$HOME/Qt/6.5.x/gcc_64/bin:$PATH"` in your `.bashrc` or `.zshrc`
 
 You don't need this if you only build via Qt Creator — only when running `qmake` from a terminal.
 
@@ -319,7 +322,6 @@ You forgot to install **Qt Charts** during the installer step. Re-run the Qt Mai
 ### Compile error "'Q_OBJECT' macro requires moc"
 
 Either:
-
 - The `moc` (meta-object compiler) didn't run on your header — fix by **right-clicking the project → Run qmake**, then *Build → Rebuild*
 - Your class declares `Q_OBJECT` but the header isn't listed under `HEADERS +=` in the `.pro` file
 
@@ -327,8 +329,10 @@ Either:
 
 Missing system libraries that Qt needs at runtime. Install them:
 
-    sudo apt install libxcb-xinerama0 libxcb-icccm4 libxcb-image0 \
-                     libxcb-keysyms1 libxcb-render-util0 libxcb-shape0
+```bash
+sudo apt install libxcb-xinerama0 libxcb-icccm4 libxcb-image0 \
+                 libxcb-keysyms1 libxcb-render-util0 libxcb-shape0
+```
 
 ### Slow builds on Windows
 
@@ -346,8 +350,8 @@ Custom widgets need to be **promoted** in Designer. Right-click a placeholder QW
 
 ## What's next
 
-Once you've got Qt installed and can build & run `HelloAutoHMI`, you're ready for **[Module 02 — Qt Widgets & Layouts](https://github.com/ManeParag/Qt_Automotive_Training/blob/main/02-qt-widgets-layouts)** *(coming soon)* where you'll start composing real automotive dashboard UIs.
+Once you've got Qt installed and can build & run `HelloAutoHMI`, you're ready for **[Module 02 — Qt Widgets & Layouts](../02-qt-widgets-layouts/)** *(coming soon)* where you'll start composing real automotive dashboard UIs.
 
 ---
 
-← [Back to syllabus](https://github.com/ManeParag/Qt_Automotive_Training/blob/main/README.md) · [Next module →](https://github.com/ManeParag/Qt_Automotive_Training/blob/main/02-qt-widgets-layouts) *(coming soon)*
+← [Back to syllabus](../README.md)  ·  [Next module →](../02-qt-widgets-layouts/) *(coming soon)*
