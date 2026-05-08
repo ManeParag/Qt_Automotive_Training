@@ -4,7 +4,7 @@
 
 | Phase | Level | Time | Qt modules |
 | --- | --- | --- | --- |
-| Phase 1 — Qt Fundamentals | Beginner | 1.5 hours | Qt Core · Qt Widgets |
+| Phase 1 — Qt Fundamentals | Beginner | 3 hours | Qt Core · Qt Widgets |
 
 ---
 
