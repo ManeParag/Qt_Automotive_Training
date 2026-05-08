@@ -4,7 +4,7 @@
 
 | Phase | Level | Time | Qt modules |
 | --- | --- | --- | --- |
-| Phase 1 — Qt Fundamentals | Beginner | 3 hours | Qt Core · Qt Widgets |
+| Phase 1 — Qt Fundamentals | Beginner | 1.5 hours | Qt Core · Qt Widgets |
 
 ---
 
@@ -87,7 +87,9 @@ Throughout this training we use plain **open-source Qt 6.1** running on a normal
 
 ## 3. Installation
 
-We use **Qt 6.1** with the open-source license. Total install size is around 10–12 GB.
+This training works with **Qt 5.15 or any newer version, including all Qt 6.x releases**. We recommend **Qt 6.1** as the baseline — all examples, screenshots, and documentation links in this training are aligned to Qt 6.1. Total install size is around 10–12 GB.
+
+> **Version flexibility:** All modules, code, and exercises in this training are compatible with Qt 5.15 LTS and any newer version. If your team or project is already on Qt 5.15, you can follow this training without switching versions. The official documentation links throughout this training point to **Qt 6.1** for consistency.
 
 ### Step 1 — Create a Qt account
 
@@ -101,7 +103,7 @@ The same page provides a small installer for your OS (Windows / Linux / macOS). 
 
 When the installer asks what to install, **tick at minimum**:
 
-- ✅ **Qt 6.1**
+- ✅ **Qt 6.1** *(or Qt 5.15+ if you prefer the Qt 5 line)*
   * ✅ **MSVC 2019 64-bit** *(Windows — preferred)* OR **MinGW 8.1.0 64-bit** *(Windows — alternative)*
   * ✅ **GCC 64-bit** *(Linux)*
   * ✅ **macOS** *(Mac)*
@@ -181,7 +183,7 @@ Open any of the starter projects in this repo and you'll see a handful of files.
 This is the **manifest**. qmake reads it to figure out what to compile and how. Typical contents:
 
     QT       += core gui widgets   # which Qt modules this app uses
-    CONFIG   += c++17              # use C++17 (required by Qt 6.1)
+    CONFIG   += c++17              # use C++17 (works on Qt 5.15+ and Qt 6.x)
     TARGET    = HelloAutoHMI       # name of the output executable
     TEMPLATE  = app                # we're building an application
 
@@ -230,7 +232,7 @@ When you build, Qt Creator creates a `build-<projectname>-<kit>-Debug/` folder n
 
 ## 6. Official Documentation Map
 
-The Qt documentation is excellent but vast. Here are the pages that actually matter when you're starting out — bookmark these. All links point to the **Qt 6.1** documentation to match the version we use throughout this training.
+The Qt documentation is excellent but vast. Here are the pages that actually matter when you're starting out — bookmark these. All links point to the **Qt 6.1** documentation; the same pages exist in the Qt 5.15 docs at `doc.qt.io/qt-5/...` if you're working on the Qt 5 line.
 
 ### Start here
 
@@ -310,7 +312,7 @@ Auto-detection usually works; manual fixup is needed only after weird installs.
 
 ### Linker error "cannot find -lQt6Charts"
 
-You forgot to install **Qt Charts** during the installer step. Re-run the Qt Maintenance Tool, find your Qt 6.1 version, tick **Qt Charts**, install. Then in Qt Creator, *Build → Rebuild All*.
+You forgot to install **Qt Charts** during the installer step. Re-run the Qt Maintenance Tool, find your Qt version, tick **Qt Charts**, install. Then in Qt Creator, *Build → Rebuild All*. *(For Qt 5 builds, the equivalent linker error is `cannot find -lQt5Charts`.)*
 
 ### Compile error "'Q_OBJECT' macro requires moc"
 
@@ -342,7 +344,7 @@ Custom widgets need to be **promoted** in Designer. Right-click a placeholder QW
 
 ## What's next
 
-Once you've got Qt 6.1 installed and can build & run `HelloAutoHMI`, you're ready for **[Module 02 — Qt Widgets & Layouts](https://github.com/ManeParag/Qt_Automotive_Training/blob/main/02-qt-widgets-layouts)** *(coming soon)* where you'll start composing real automotive dashboard UIs.
+Once you've got Qt installed (Qt 6.1 recommended, Qt 5.15+ also supported) and can build & run `HelloAutoHMI`, you're ready for **[Module 02 — Qt Widgets & Layouts](https://github.com/ManeParag/Qt_Automotive_Training/blob/main/02-qt-widgets-layouts)** *(coming soon)* where you'll start composing real automotive dashboard UIs.
 
 ---
 
