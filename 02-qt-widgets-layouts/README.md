@@ -1,6 +1,6 @@
 # Module 02 — Qt Widgets & Layouts
 
-> The building blocks of every Qt HMI. Learn the standard widget set, master Qt's layout system, and start composing real automotive dashboard screens.
+> The building blocks of every Qt HMI. Learn what the standard widget set offers, how Qt's layout system arranges them, and why automotive teams pick widgets for instrument clusters.
 
 | Phase | Level | Time | Qt modules |
 | --- | --- | --- | --- |
@@ -14,7 +14,7 @@
 2. [Widgets in Automotive HMIs](#2-widgets-in-automotive-hmis)
 3. [The Standard Widget Catalog](#3-the-standard-widget-catalog)
 4. [Qt Layout System](#4-qt-layout-system)
-5. [Building an Automotive Cluster Mock-up](#5-building-an-automotive-cluster-mock-up)
+5. [Size Policies](#5-size-policies)
 6. [Custom Widgets — When Standard Isn't Enough](#6-custom-widgets--when-standard-isnt-enough)
 7. [Official Documentation Map](#7-official-documentation-map)
 8. [Reference Videos](#8-reference-videos)
@@ -28,9 +28,9 @@ Everything you see on an automotive screen — a speed readout, a fuel bar, a cl
 
 Get widgets and layouts right and you've solved 70 % of the visual side of an HMI. Get them wrong and you'll spend the rest of the project fighting pixel coordinates every time the resolution changes.
 
-A widget is any visible element that inherits from `QWidget`. It owns a region of the screen, it can paint itself, and it can receive mouse, keyboard, and touch events. Buttons, labels, sliders, progress bars, lists, and even your top-level window are all widgets.
+A **widget** is any visible element that inherits from `QWidget`. It owns a region of the screen, it can paint itself, and it can receive mouse, keyboard, and touch events. Buttons, labels, sliders, progress bars, lists, and even your top-level window are all widgets.
 
-A layout is **not** a widget — it's a non-visual manager that decides where its child widgets go and how they should resize when the parent grows or shrinks. Layouts are why a Qt app written for 1024×600 still looks correct when the OEM swaps in a 1920×720 panel six months into the project.
+A **layout** is *not* a widget — it's a non-visual manager that decides where its child widgets go and how they should resize when the parent grows or shrinks. Layouts are why a Qt app written for 1024×600 still looks correct when the OEM swaps in a 1920×720 panel six months into the project.
 
 ---
 
@@ -55,7 +55,7 @@ The same widget catalog you'd use to write a desktop app powers what the driver 
 
 ### Why widgets, not Qt Quick, for clusters?
 
-Qt offers two UI technologies: **Qt Widgets** (C++, what this module covers) and **Qt Quick / QML** (declarative, JavaScript-flavoured). For consumer-facing flashy IVI systems, QML wins on animation. But many automotive teams still pick Widgets for:
+Qt offers two UI technologies: **Qt Widgets** (C++, what this module covers) and **Qt Quick / QML** (declarative, JavaScript-flavoured). For consumer-facing flashy IVI systems, QML often wins on animation. But many automotive teams still pick Widgets for clusters:
 
 - **Lower memory footprint** — important on entry-level clusters
 - **Deterministic rendering** — easier to certify for ISO 26262 with Qt Safe Renderer
@@ -68,7 +68,7 @@ A common pattern is **Widgets for the cluster, QML for the IVI** in the same veh
 
 ## 3. The Standard Widget Catalog
 
-Qt ships ~50 widget classes. You'll use about a dozen of them every day. Group them by purpose:
+Qt ships ~50 widget classes. You'll use about a dozen of them every day. Group them by purpose.
 
 ### Display widgets — read-only
 
@@ -111,6 +111,15 @@ Qt ships ~50 widget classes. You'll use about a dozen of them every day. Group t
 | `QTableWidget` | rows × columns | trip statistics |
 | `QTreeWidget` | hierarchical | settings menu |
 
+### Minimal widget snippet
+
+Creating a widget is just a constructor call. The parent pointer (`this`, the window) is what makes it appear:
+
+    QLabel      *speedLabel = new QLabel("120", this);
+    QPushButton *startBtn   = new QPushButton("START", this);
+
+Without a layout these would stack on top of each other at position (0, 0) — which is exactly why §4 exists.
+
 > 📘 **Reference:** [Widget Classes (Qt 6.1)](https://doc.qt.io/archives/qt-6.1/widget-classes.html) · [Qt Widgets Examples (Qt 6.1)](https://doc.qt.io/archives/qt-6.1/examples-widgets.html)
 
 ---
@@ -125,7 +134,6 @@ Qt provides four built-in layout managers. Master these and you can build anythi
 
 Arranges children left-to-right (or right-to-left for RTL languages — Qt handles Arabic / Hebrew automatically).
 
-    QWidget *panel = new QWidget;
     QHBoxLayout *row = new QHBoxLayout(panel);
     row->addWidget(new QLabel("Speed:"));
     row->addWidget(new QLabel("120"));
@@ -149,21 +157,21 @@ Same idea, top-to-bottom.
 The workhorse. Place widgets at specific row / column positions, optionally spanning multiple cells.
 
     QGridLayout *grid = new QGridLayout(panel);
-    grid->addWidget(speedometer,   0, 0, 2, 1);   // row 0, col 0, span 2 rows
-    grid->addWidget(tachometer,    0, 1, 2, 1);   // row 0, col 1, span 2 rows
-    grid->addWidget(fuelGauge,     0, 2);
-    grid->addWidget(tempGauge,     1, 2);
+    grid->addWidget(speedometer, 0, 0, 2, 1);   // row 0, col 0, span 2 rows
+    grid->addWidget(tachometer,  0, 1, 2, 1);
+    grid->addWidget(fuelGauge,   0, 2);
+    grid->addWidget(tempGauge,   1, 2);
 
-**Auto HMI use:** the entire cluster layout — two large gauges side-by-side with smaller indicators on the right.
+**Auto HMI use:** the entire cluster — two large gauges side-by-side with smaller indicators on the right.
 
 ### `QFormLayout` — label + field rows
 
 Two columns: a label on the left, an input widget on the right. Built specifically for settings dialogs.
 
     QFormLayout *form = new QFormLayout(panel);
-    form->addRow("Driver name:",  nameEdit);
-    form->addRow("Units:",        unitsCombo);
-    form->addRow("Language:",     langCombo);
+    form->addRow("Driver name:", nameEdit);
+    form->addRow("Units:",       unitsCombo);
+    form->addRow("Language:",    langCombo);
 
 **Auto HMI use:** the user-profile screen, Bluetooth pairing dialog, settings panes.
 
@@ -171,13 +179,15 @@ Two columns: a label on the left, an input widget on the right. Built specifical
 
 Three more concepts and you're done:
 
-- **`addStretch()`** — adds an invisible spring that absorbs leftover space. Use it to push widgets to one edge: `row->addWidget(logo); row->addStretch(); row->addWidget(closeButton);` puts the logo on the left and close on the right.
+- **`addStretch()`** — adds an invisible spring that absorbs leftover space. Use it to push widgets to one edge: `row->addWidget(logo); row->addStretch(); row->addWidget(closeButton);` puts the logo on the left and the close button on the right.
 - **`QSpacerItem`** — a fixed-size gap, useful for breathing room.
 - **Nesting** — layouts can contain other layouts (`addLayout()`), which is how you build complex screens. A grid layout for the overall cluster, with vertical layouts inside each cell.
 
 > 📘 **Reference:** [Layout Management (Qt 6.1)](https://doc.qt.io/archives/qt-6.1/layout.html) · [QHBoxLayout](https://doc.qt.io/archives/qt-6.1/qhboxlayout.html) · [QVBoxLayout](https://doc.qt.io/archives/qt-6.1/qvboxlayout.html) · [QGridLayout](https://doc.qt.io/archives/qt-6.1/qgridlayout.html) · [QFormLayout](https://doc.qt.io/archives/qt-6.1/qformlayout.html)
 
-### Size policies — the rule that resolves resize conflicts
+---
+
+## 5. Size Policies
 
 When the parent grows, who absorbs the extra pixels? The `QSizePolicy` of each child decides.
 
@@ -193,75 +203,16 @@ When the parent grows, who absorbs the extra pixels? The `QSizePolicy` of each c
 
 Rule of thumb for a cluster: gauges set to `Expanding`, status icons set to `Fixed`, padding handled by `addStretch()`.
 
+    speedometer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    statusIcon->setSizePolicy(QSizePolicy::Fixed,     QSizePolicy::Fixed);
+
 > 📘 **Reference:** [QSizePolicy (Qt 6.1)](https://doc.qt.io/archives/qt-6.1/qsizepolicy.html)
-
----
-
-## 5. Building an Automotive Cluster Mock-up
-
-Putting widgets and layouts together. The starter project in this folder builds a **simplified instrument cluster** with three regions:
-
-    ┌────────────────────────────────────────────────────────┐
-    │  ⚠  🔋  💡  🛡                              📶  📞  ⚙  │   ← top bar (QHBoxLayout)
-    ├──────────────┬───────────────────┬───────────────────┤
-    │              │                   │                   │
-    │ Tachometer   │   Speedometer     │   Fuel  Temp      │   ← centre (QGridLayout)
-    │ (custom)     │   "120 km/h"      │   ▓▓▓▓░  ▓▓░░░    │
-    │              │                   │                   │
-    ├──────────────┴───────────────────┴───────────────────┤
-    │  Gear: D    Trip: 142 km    Range: 380 km    Eco     │   ← bottom bar (QHBoxLayout)
-    └────────────────────────────────────────────────────────┘
-
-The whole window uses a top-level `QVBoxLayout` with three children — top bar, centre grid, bottom bar — and stretch factors so the centre grid takes most of the height.
-
-### Skeleton code
-
-    // mainwindow.cpp
-    MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
-    {
-        auto *central = new QWidget(this);
-        setCentralWidget(central);
-
-        auto *root = new QVBoxLayout(central);
-
-        // --- top bar ---
-        auto *top = new QHBoxLayout;
-        top->addWidget(new QLabel("⚠"));
-        top->addWidget(new QLabel("🔋"));
-        top->addStretch();                 // pushes the right group to the edge
-        top->addWidget(new QLabel("📶"));
-        top->addWidget(new QLabel("⚙"));
-        root->addLayout(top);
-
-        // --- centre ---
-        auto *centre = new QGridLayout;
-        centre->addWidget(makeTachometer(),    0, 0);
-        centre->addWidget(makeSpeedometer(),   0, 1);
-        centre->addWidget(makeFuelGauge(),     0, 2);
-        centre->setColumnStretch(0, 2);
-        centre->setColumnStretch(1, 3);    // speedo is widest
-        centre->setColumnStretch(2, 2);
-        root->addLayout(centre, /*stretch*/ 1);
-
-        // --- bottom bar ---
-        auto *bottom = new QHBoxLayout;
-        bottom->addWidget(new QLabel("Gear: D"));
-        bottom->addWidget(new QLabel("Trip: 142 km"));
-        bottom->addWidget(new QLabel("Range: 380 km"));
-        bottom->addStretch();
-        bottom->addWidget(new QLabel("Eco"));
-        root->addLayout(bottom);
-    }
-
-Open `02-qt-widgets-layouts/ClusterMockup/ClusterMockup.pro` in Qt Creator and press **Ctrl+R** to see it run.
-
-> 📘 **Reference:** [Qt Widgets — Window & Layout Example (Qt 6.1)](https://doc.qt.io/archives/qt-6.1/qtwidgets-tutorials-widgets-windowlayout-example.html)
 
 ---
 
 ## 6. Custom Widgets — When Standard Isn't Enough
 
-You won't ship an automotive cluster using a stock `QProgressBar` for the fuel gauge — it'd look like a desktop app. There are three paths to a custom look, in increasing order of effort:
+You won't ship an automotive cluster using a stock `QProgressBar` for the fuel gauge — it'd look like a desktop app. There are three paths to a custom look, in increasing order of effort.
 
 ### Path 1 — Qt Style Sheets (QSS)
 
@@ -275,8 +226,6 @@ CSS-like syntax to restyle any widget. Good for colours, fonts, borders, icons.
         padding: 10px 20px;
         font: bold 16pt "Roboto";
     }
-    QPushButton:hover   { background-color: #003040; }
-    QPushButton:pressed { background-color: #00d4ff; color: #1a1a1a; }
 
 A surprising amount of automotive HMI styling is done with QSS. Covered in detail in **Module 04 — Styling & QSS**.
 
@@ -284,8 +233,7 @@ A surprising amount of automotive HMI styling is done with QSS. Covered in detai
 
 For shapes that no standard widget gives you — circular tachometer arcs, sweeping needles, custom warning icons. You inherit from `QWidget`, override `paintEvent(QPaintEvent*)`, and draw with `QPainter`.
 
-    void TachometerWidget::paintEvent(QPaintEvent *)
-    {
+    void TachometerWidget::paintEvent(QPaintEvent *) {
         QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing);
         // draw arc, ticks, needle ...
@@ -345,7 +293,7 @@ Bookmark these — every link is the **Qt 6.1** version (the same pages exist un
 
 ## 8. Reference Videos
 
-Curated picks. Watch the first two before starting the exercises in this folder.
+Curated picks. Watch the first two before diving into the sample project in this folder.
 
 | Video | Length | Why watch |
 | --- | --- | --- |
@@ -360,25 +308,27 @@ Curated picks. Watch the first two before starting the exercises in this folder.
 
 ## 9. Common Errors & Fixes
 
-### Widgets overlap or appear in the wrong place
+Things that bite every Qt newcomer when working with widgets and layouts.
 
-You set `move()` / `resize()` instead of using a layout, or you forgot to call `setLayout()` on the parent. Fix: build a layout, add the widgets to it, set the layout on the parent widget. Never hard-code positions.
+### Widgets overlap or appear at the top-left corner
+
+You created widgets but never put them in a layout. Without a layout, every widget sits at its default position (0, 0). **Fix:** create a layout, `addWidget()` each widget to it, and call `setLayout()` on the parent (or pass the parent into the layout's constructor).
 
 ### "QLayout: Attempting to add QLayout to QWidget which already has a layout"
 
-You called `setLayout()` twice on the same widget, or you passed the parent into both the widget constructor and `setLayout()`. Fix: pick one. Either `new QHBoxLayout(parent)` *or* `parent->setLayout(layout)` — not both.
+You called `setLayout()` twice on the same widget, or you passed the parent into both the layout constructor *and* `setLayout()`. **Fix:** pick one. Either `new QHBoxLayout(parent)` *or* `parent->setLayout(layout)` — never both.
 
 ### Widget added to layout doesn't appear
 
 Three usual causes:
 
 1. The parent widget was never `show()`-n.
-2. The widget was added to the layout *after* its parent was already shown — call `update()` or just add before showing.
-3. `QSizePolicy::Fixed` with `sizeHint()` of `(0, 0)` — set a meaningful minimum size or change the policy.
+2. The widget was added to the layout *after* the parent was already shown — call `update()` or just add before showing.
+3. `QSizePolicy::Fixed` with a `sizeHint()` of `(0, 0)` — set a meaningful minimum size or change the policy.
 
 ### Layout looks fine in Designer, broken at runtime
 
-Almost always a missing `setLayout()` in your generated code, or you forgot to call `ui->setupUi(this)` in the constructor. Open `ui_*.h` (in your build folder) and confirm the layout is being applied.
+Almost always a missing `ui->setupUi(this)` call in your constructor, or your `.ui` file isn't listed under `FORMS +=` in the `.pro` file. Open the generated `ui_*.h` in your build folder to confirm the layout code was generated.
 
 ### Stylesheet isn't applied
 
@@ -386,19 +336,33 @@ Almost always a missing `setLayout()` in your generated code, or you forgot to c
 - Check selector syntax — `QPushButton#startButton` selects by `objectName`, set via `setObjectName("startButton")`.
 - If you subclass `QWidget` and override `paintEvent`, stylesheets are ignored unless you call the QStyle paint helpers explicitly.
 
-### App freezes when a button is held down
-
-You're doing work in the event handler that should be on a worker thread. The event loop can't process more events until your slot returns. Quick fix for testing: `QApplication::processEvents()`. Proper fix: move the work to a `QThread` (covered in **Module 07 — Threading**).
-
 ### Window opens at tiny size
 
-You forgot to add a layout, so the window has no `sizeHint()`. Add a layout, or call `resize(800, 480)` on the main window before `show()`.
+You forgot to add a layout, so the window has no `sizeHint()`. **Fix:** add a layout, or call `resize(800, 480)` on the main window before `show()`.
+
+### Widgets don't resize when window resizes
+
+The child widget has `QSizePolicy::Fixed`, or there's no stretch in the layout. **Fix:** change the policy to `Expanding`, or add `addStretch()` to absorb extra space the way you want.
+
+### Spacing or margins look wrong
+
+By default Qt adds 9 px margins and ~6 px spacing. Tune with `layout->setContentsMargins(0, 0, 0, 0)` for an edge-to-edge automotive look, and `layout->setSpacing(2)` to tighten gaps between widgets.
+
+### Custom widget shows in code but blank in Designer
+
+You forgot to **promote** the placeholder `QWidget` to your custom class. Right-click the placeholder in Designer → *Promote to…* → enter class name and header file.
+
+### Build error: `'QHBoxLayout' was not declared in this scope`
+
+Missing include. Add `#include <QHBoxLayout>` at the top of the file. Each widget and layout class is its own header in Qt 6.
 
 ---
 
 ## What's next
 
-Once you can lay out the cluster mock-up and tweak its widgets, you're ready for **[Module 03 — Signals & Slots](https://github.com/ManeParag/Qt_Automotive_Training/blob/main/03-signals-and-slots)** *(coming soon)* — the mechanism that wires button clicks, sensor updates, and animation timers to the rest of your HMI.
+Once you understand the widget catalog and how layouts compose them, you're ready for **[Module 03 — Signals & Slots](https://github.com/ManeParag/Qt_Automotive_Training/blob/main/03-signals-and-slots)** *(coming soon)* — the mechanism that wires button clicks, sensor updates, and animation timers to the rest of your HMI.
+
+A worked sample project and exercise solutions will live in subfolders next to this README — refer to them after you've absorbed the concepts above.
 
 ---
 
