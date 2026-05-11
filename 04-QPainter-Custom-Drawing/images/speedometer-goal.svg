@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-150 -150 300 240" width="420" height="336" role="img" aria-label="Speedometer mockup showing 120 km/h on a 0–240 scale">
+  <!-- Background -->
+  <rect x="-150" y="-150" width="300" height="240" fill="#0d1117" rx="8"/>
+
+  <!-- Outer ring -->
+  <circle cx="0" cy="0" r="125" fill="none" stroke="#1f2937" stroke-width="1"/>
+
+  <!-- Arc track (gray, 270° from lower-left through top to lower-right) -->
+  <path d="M -74.2,74.2 A 105,105 0 1,1 74.2,74.2"
+        fill="none" stroke="#1f2937" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- Arc fill (cyan), showing 50% of scale: from -135° to 0° (top) -->
+  <path d="M -74.2,74.2 A 105,105 0 0,1 0,-105"
+        fill="none" stroke="#00d4ff" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- Major tick marks every 27° from -135° to +135° (11 ticks) -->
+  <g stroke="#888" stroke-width="2">
+    <line x1="0" y1="-90" x2="0" y2="-115" transform="rotate(-135)"/>
+    <line x1="0" y1="-90" x2="0" y2="-115" transform="rotate(-108)"/>
+    <line x1="0" y1="-90" x2="0" y2="-115" transform="rotate(-81)"/>
+    <line x1="0" y1="-90" x2="0" y2="-115" transform="rotate(-54)"/>
+    <line x1="0" y1="-90" x2="0" y2="-115" transform="rotate(-27)"/>
+    <line x1="0" y1="-90" x2="0" y2="-115" transform="rotate(0)"/>
+    <line x1="0" y1="-90" x2="0" y2="-115" transform="rotate(27)"/>
+    <line x1="0" y1="-90" x2="0" y2="-115" transform="rotate(54)"/>
+    <line x1="0" y1="-90" x2="0" y2="-115" transform="rotate(81)"/>
+    <line x1="0" y1="-90" x2="0" y2="-115" transform="rotate(108)"/>
+    <line x1="0" y1="-90" x2="0" y2="-115" transform="rotate(135)"/>
+  </g>
+
+  <!-- Number labels -->
+  <g fill="#9ca3af" font-family="Arial, sans-serif" font-size="12" text-anchor="middle">
+    <text x="-92" y="82">0</text>
+    <text x="-122" y="-4">60</text>
+    <text x="0" y="-128">120</text>
+    <text x="122" y="-4">180</text>
+    <text x="92" y="82">240</text>
+  </g>
+
+  <!-- Needle pointing to 120 (top, 0°) -->
+  <g>
+    <polygon points="0,-90 -3,0 3,0" fill="#ff3b3b"/>
+    <circle cx="0" cy="0" r="12" fill="#ff3b3b"/>
+    <circle cx="0" cy="0" r="5" fill="#0d1117"/>
+  </g>
+
+  <!-- Digital readout -->
+  <text x="0" y="40" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="34" font-weight="bold">120</text>
+  <text x="0" y="62" text-anchor="middle" fill="#9ca3af" font-family="Arial, sans-serif" font-size="13">km/h</text>
+</svg>

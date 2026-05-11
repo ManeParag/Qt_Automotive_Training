@@ -4,7 +4,7 @@
 
 | Phase | Level | Time | Qt modules |
 | --- | --- | --- | --- |
-| Phase 2 — Qt Fundamentals | Intermediate | 3 hours | Qt Core · Qt GUI · Qt Widgets |
+| Phase 2 — Intermediate Qt | Intermediate | 3 hours | Qt Core · Qt GUI · Qt Widgets |
 
 ---
 
@@ -40,6 +40,12 @@ If Module 02 taught you to assemble pre-built widgets and Module 03 taught you t
 ---
 
 ## 2. QPainter in Automotive HMIs
+
+The visual goal of this module — a speedometer like this, fully custom-painted, every line of which is a QPainter call:
+
+<p align="center">
+  <img src="images/speedometer-goal.svg" alt="Speedometer mockup showing 120 km/h on a 0–240 scale with cyan progress arc, red needle, and digital readout" width="380"/>
+</p>
 
 Look at any modern instrument cluster. The dial faces, sweeping needles, gradient arcs, custom warning glyphs, fuel-level pictograms — almost none of those are stock Qt widgets. They're custom-painted with `QPainter` inside subclasses of `QWidget`.
 
@@ -78,23 +84,20 @@ Inside `paintEvent`, you create a **`QPainter`** bound to the widget (`this`), i
 
 The smallest possible custom widget — draws a red circle filling itself:
 
-    // dot.h
     class Dot : public QWidget {
         Q_OBJECT
     public:
         explicit Dot(QWidget *parent = nullptr) : QWidget(parent) {}
-    protected:
-        void paintEvent(QPaintEvent *) override;
-    };
 
-    // dot.cpp
-    void Dot::paintEvent(QPaintEvent *) {
-        QPainter p(this);
-        p.setRenderHint(QPainter::Antialiasing);
-        p.setBrush(Qt::red);
-        p.setPen(Qt::NoPen);
-        p.drawEllipse(rect());     // fill the entire widget area
-    }
+    protected:
+        void paintEvent(QPaintEvent *) override {
+            QPainter p(this);
+            p.setRenderHint(QPainter::Antialiasing);
+            p.setBrush(Qt::red);
+            p.setPen(Qt::NoPen);
+            p.drawEllipse(rect());     // fill the entire widget area
+        }
+    };
 
 `rect()` returns the widget's drawing area as a `QRect` — usually `(0, 0, width, height)`. You'll use it constantly.
 
@@ -215,6 +218,10 @@ Use `Qt::red`, `Qt::black`, `Qt::transparent` for quick prototyping. For real HM
 ## 6. Transformations — Translate, Rotate, Scale
 
 This is what makes a needle *rotate*. Instead of recalculating the polygon coordinates for every angle, you draw the needle once at angle 0 and let `QPainter` rotate the coordinate system.
+
+<p align="center">
+  <img src="images/transformations.svg" alt="Three panels: translate moves the origin, rotate spins around the origin, scale resizes" width="700"/>
+</p>
 
 Three operations, all stackable:
 
