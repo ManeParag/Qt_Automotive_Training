@@ -4,7 +4,7 @@
 
 | Phase | Level | Time | Qt modules |
 | --- | --- | --- | --- |
-| Phase 2 — Qt Fundamentals | Intermediate | 3 hours | Qt.QTimer QThread|
+| Phase 2 — Qt Fundamentals | Intermediate | 3 hours | Qt, QTimer, QThread|
 
 ---
 ## Table of Contents
