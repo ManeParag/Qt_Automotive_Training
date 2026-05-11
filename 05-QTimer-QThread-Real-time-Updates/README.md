@@ -2,11 +2,11 @@
 
 > The heartbeat of every live HMI. Learn how `QTimer` drives animations, polls sensors, and refreshes the cluster at 30 fps — and when you need a worker thread instead.
 
-| Phase 2 — Intermediate Qt | Intermediate | 3 hours | Qt Core · Qt Widgets |
-=======
-| Phase 2 — Qt Fundamentals | Intermediate | 3 hours | Qt Core · Qt Widgets |
+| Phase | Level | Time | Qt modules |
+| --- | --- | --- | --- |
+| Phase 2 — Qt Fundamentals | Intermediate | 3 hours | Qt.QTimer QThread|
 
-
+---
 ## Table of Contents
 
 1. [Why QTimer Matters](#1-why-qtimer-matters)
