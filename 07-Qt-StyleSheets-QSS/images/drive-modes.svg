@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 200" width="720" height="200" role="img" aria-label="Three drive mode buttons: Eco green, Comfort cyan, Sport red">
+  <rect width="720" height="200" fill="#0d1117" rx="8"/>
+
+  <text x="360" y="32" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="15" font-weight="bold">Drive-mode buttons styled by Qt property</text>
+
+  <!-- Eco -->
+  <g transform="translate(60,70)">
+    <rect width="170" height="60" rx="8" fill="#0d1117" stroke="#10b981" stroke-width="2.5"/>
+    <text x="85" y="38" text-anchor="middle" fill="#10b981" font-family="Arial, sans-serif" font-size="17" font-weight="bold">Eco</text>
+    <text x="85" y="85" text-anchor="middle" fill="#6b7280" font-family="Arial, sans-serif" font-size="10">property: driveMode=&quot;Eco&quot;</text>
+  </g>
+
+  <!-- Comfort -->
+  <g transform="translate(275,70)">
+    <rect width="170" height="60" rx="8" fill="#0d1117" stroke="#00d4ff" stroke-width="2.5"/>
+    <text x="85" y="38" text-anchor="middle" fill="#00d4ff" font-family="Arial, sans-serif" font-size="17" font-weight="bold">Comfort</text>
+    <text x="85" y="85" text-anchor="middle" fill="#6b7280" font-family="Arial, sans-serif" font-size="10">property: driveMode=&quot;Comfort&quot;</text>
+  </g>
+
+  <!-- Sport -->
+  <g transform="translate(490,70)">
+    <rect width="170" height="60" rx="8" fill="#0d1117" stroke="#ff3b3b" stroke-width="2.5"/>
+    <text x="85" y="38" text-anchor="middle" fill="#ff3b3b" font-family="Arial, sans-serif" font-size="17" font-weight="bold">Sport</text>
+    <text x="85" y="85" text-anchor="middle" fill="#6b7280" font-family="Arial, sans-serif" font-size="10">property: driveMode=&quot;Sport&quot;</text>
+  </g>
+
+  <!-- Footer caption -->
+  <text x="360" y="175" text-anchor="middle" fill="#9ca3af" font-family="Arial, sans-serif" font-size="11">QPushButton[driveMode=&quot;Sport&quot;] { border: 2px solid #ff3b3b; }</text>
+</svg>

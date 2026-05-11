@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 200" width="760" height="200" role="img" aria-label="Four button states: normal, hover, pressed, disabled">
+  <rect width="760" height="200" fill="#0d1117" rx="8"/>
+
+  <text x="380" y="32" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="15" font-weight="bold">QPushButton — same widget, four pseudo-states</text>
+
+  <!-- Normal state -->
+  <g transform="translate(40,70)">
+    <text x="80" y="-10" text-anchor="middle" fill="#9ca3af" font-family="Arial, sans-serif" font-size="11">:normal (default)</text>
+    <rect width="160" height="56" rx="6" fill="#003355" stroke="#003355" stroke-width="2"/>
+    <text x="80" y="35" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="15" font-weight="bold">Start Engine</text>
+    <text x="80" y="78" text-anchor="middle" fill="#6b7280" font-family="Arial, sans-serif" font-size="10">background: #003355</text>
+  </g>
+
+  <!-- Hover state -->
+  <g transform="translate(220,70)">
+    <text x="80" y="-10" text-anchor="middle" fill="#9ca3af" font-family="Arial, sans-serif" font-size="11">:hover</text>
+    <rect width="160" height="56" rx="6" fill="#0066aa" stroke="#0066aa" stroke-width="2"/>
+    <text x="80" y="35" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="15" font-weight="bold">Start Engine</text>
+    <text x="80" y="78" text-anchor="middle" fill="#6b7280" font-family="Arial, sans-serif" font-size="10">background: #0066aa</text>
+  </g>
+
+  <!-- Pressed state -->
+  <g transform="translate(400,70)">
+    <text x="80" y="-10" text-anchor="middle" fill="#9ca3af" font-family="Arial, sans-serif" font-size="11">:pressed</text>
+    <rect width="160" height="56" rx="6" fill="#00d4ff" stroke="#00d4ff" stroke-width="2"/>
+    <text x="80" y="35" text-anchor="middle" fill="#000000" font-family="Arial, sans-serif" font-size="15" font-weight="bold">Start Engine</text>
+    <text x="80" y="78" text-anchor="middle" fill="#6b7280" font-family="Arial, sans-serif" font-size="10">background: #00d4ff</text>
+  </g>
+
+  <!-- Disabled state -->
+  <g transform="translate(580,70)">
+    <text x="80" y="-10" text-anchor="middle" fill="#9ca3af" font-family="Arial, sans-serif" font-size="11">:disabled</text>
+    <rect width="160" height="56" rx="6" fill="#3f3f46" stroke="#3f3f46" stroke-width="2"/>
+    <text x="80" y="35" text-anchor="middle" fill="#9ca3af" font-family="Arial, sans-serif" font-size="15" font-weight="bold">Start Engine</text>
+    <text x="80" y="78" text-anchor="middle" fill="#6b7280" font-family="Arial, sans-serif" font-size="10">background: #3f3f46</text>
+  </g>
+
+  <!-- Footer caption -->
+  <text x="380" y="170" text-anchor="middle" fill="#6b7280" font-family="Arial, sans-serif" font-size="11">One QSS rule per state. No C++ subclassing needed.</text>
+</svg>
