@@ -4,7 +4,7 @@
 
 | Phase | Level | Time | Qt modules |
 | --- | --- | --- | --- |
-| Phase 1 — Qt Fundamentals | Intermediate | 3 hours | Qt Core · Qt Widgets |
+| Phase 2 — Intermediate Qt | Intermediate | 3 hours | Qt Core · Qt Widgets |
 
 ---
 
@@ -16,11 +16,13 @@
 4. [Single-shot vs Repeating Timers](#4-single-shot-vs-repeating-timers)
 5. [Connecting a Timer to a Slot](#5-connecting-a-timer-to-a-slot)
 6. [Timing Precision and Multiple Timers](#6-timing-precision-and-multiple-timers)
-7. [When QTimer Isn't Enough — Threading Basics](#7-when-qtimer-isnt-enough--threading-basics)
-8. [QThread + `moveToThread` Pattern](#8-qthread--movetothread-pattern)
-9. [Official Documentation Map](#9-official-documentation-map)
-10. [Reference Videos](#10-reference-videos)
-11. [Common Errors & Fixes](#11-common-errors--fixes)
+7. [When QTimer Isn't Enough — The Case for Threads](#7-when-qtimer-isnt-enough--the-case-for-threads)
+8. [Threads and Multithreading — The Basics](#8-threads-and-multithreading--the-basics)
+9. [QThread + `moveToThread` — A Minimal Example](#9-qthread--movetothread--a-minimal-example)
+10. [Worked Example — Sensor Worker for Real-time Data](#10-worked-example--sensor-worker-for-real-time-data)
+11. [Official Documentation Map](#11-official-documentation-map)
+12. [Reference Videos](#12-reference-videos)
+13. [Common Errors & Fixes](#13-common-errors--fixes)
 
 ---
 
@@ -193,7 +195,7 @@ If a slot has heavy work to do, that's the signal to move it off the GUI thread 
 
 ---
 
-## 7. When QTimer Isn't Enough — Threading Basics
+## 7. When QTimer Isn't Enough — The Case for Threads
 
 `QTimer` works because the event loop is iterating. If your slot takes 30 ms to run and your timer fires every 50 ms, you've used 60 % of the event loop's time and everything else (button responses, painting, other timers) gets squeezed. Push slot work much past that and the HMI feels sluggish.
 
@@ -201,88 +203,202 @@ Three situations push you off the GUI thread entirely:
 
 - **Blocking I/O** — reading a real CAN bus, opening a serial port, fetching a tile from a navigation server. These can block for tens or hundreds of milliseconds.
 - **Heavy computation** — image processing, FFTs on audio data, large file parsing.
-- **Periodic work that doesn't need the GUI thread** — a sensor sampler running at 1 kHz, a logger writing CAN frames to disk.
+- **High-rate continuous work** — sampling at 1 kHz, logging every CAN frame, decoding video.
 
-The answer is a **worker thread**: a second OS thread running its own event loop, with its own QTimer if needed. The worker emits signals; the GUI thread's slots react. You've already seen this pattern in Module 03's connection-type table — now we'll wire it up.
-
-### The one-line summary
-
-In Qt 5/6 you do **not** subclass `QThread`. You write a worker class that inherits `QObject`, then **move** it onto a `QThread`. This is the modern, recommended pattern.
+For all three, the answer is the same: get the work off the GUI thread so the HMI keeps responding. To do that you need a **worker thread**. The next two sections explain what that actually means, and the section after that walks through a real automotive worker.
 
 ---
 
-## 8. QThread + `moveToThread` Pattern
+## 8. Threads and Multithreading — The Basics
 
-The worker reads a sensor 20 times per second on its own thread and emits a signal. The GUI thread's slot receives the signal — automatically queued across the thread boundary — and updates the widget.
+Before the Qt-specific pattern, the underlying idea.
 
-### The worker (header)
+### What is a thread?
 
-    // sensorworker.h
+A thread is an independent lane of execution inside your program. When your app starts, the operating system gives it **one thread** — the "main thread" — and starts running your `main()` function on it. In a Qt GUI app that main thread is called the **GUI thread**: it handles all painting, mouse clicks, key presses, timers, and signal/slot calls by default.
+
+Code on a thread runs **sequentially** — one line at a time, in order. If a line takes 200 ms to complete (a slow sensor read, a network request), the thread is stuck there for 200 ms. Every other piece of work waiting on that same thread waits too.
+
+### The HMI problem in one picture
+
+A 200 ms blocking sensor read on the GUI thread looks like this:
+
+    Time →
+    GUI thread:  [draw][click handler][SENSOR READ — 200ms — BLOCKED][draw]
+                                                                     ^
+                                                            screen frozen here
+
+During those 200 ms the user can't tap a button, the speedometer needle doesn't move, the warning icon doesn't blink. The whole HMI feels broken even though nothing crashed.
+
+### What multithreading does
+
+Multithreading means **running more than one thread at the same time**. The OS interleaves them across CPU cores, so they run in parallel:
+
+    GUI thread:     [draw][click][draw][click][draw][click][draw][click]
+    Worker thread:  [READ sensor — 200ms ───────────────────][emit result]
+
+The GUI thread stays free — drawing, animating, handling input — while the worker thread does the slow work. When the worker has data to share, it emits a signal that the GUI thread receives and acts on.
+
+### A kitchen analogy
+
+A restaurant with **one cook** takes an order, cooks the steak, plates it, and serves — all in order. Customer #2 waits while customer #1's steak cooks. That's a single-threaded HMI.
+
+Add a **second cook**: one takes orders and serves, the other cooks. Both happen at the same time. Customer #2 gets their order taken while customer #1's steak is still on the grill. That's multithreading.
+
+### Why this is exactly what real-time HMIs need
+
+Automotive HMIs constantly handle data sources that arrive on their own clock — independent of what the user is doing on screen:
+
+| Data source | Rate | If done on GUI thread |
+| --- | --- | --- |
+| CAN bus frames | 50–500 per second | Each parse adds jitter to the UI |
+| GPS NMEA strings | 1–10 per second | Slow text parsing stalls painting |
+| Serial sensor poll | 20–100 Hz | Blocks UI between reads |
+| Phone over Bluetooth | bursty | Whole-second freezes when a call connects |
+| Disk logging of trip data | bursty | Buffered writes stall every widget |
+
+Move each onto its own worker thread and the GUI thread is freed to do nothing but draw — which is what gives you the **smooth 60 fps cluster experience** the driver expects, even while data is streaming in continuously.
+
+### One non-negotiable rule
+
+**Widgets can only be touched from the GUI thread.** That's a Qt rule, enforced by the framework. A worker thread reads sensors, processes data, computes results — and emits a signal. The matching slot on the GUI thread is the only place the widget is actually updated.
+
+This is exactly why signals & slots (Module 03) and threading fit together so neatly: the signal carries the data across the thread boundary, the slot runs back on the GUI thread, the widget updates safely.
+
+> 📘 **Reference:** [Thread Support in Qt (Qt 6.1)](https://doc.qt.io/archives/qt-6.1/thread-basics.html) · [Threads and QObjects (Qt 6.1)](https://doc.qt.io/archives/qt-6.1/threads-qobject.html)
+
+---
+
+## 9. QThread + `moveToThread` — A Minimal Example
+
+In Qt 5/6 you do **not** subclass `QThread`. You write a worker class that inherits `QObject`, then **move** it onto a `QThread`. This is the modern, recommended pattern.
+
+Three steps:
+
+1. Define a `QObject` worker with a slot that does the work and a signal that reports results.
+2. Create a `QThread`, create the worker, call `worker->moveToThread(thread)`.
+3. Connect the worker's signal to a GUI-thread slot, then start the thread.
+
+### Simplest possible worker — a counter
+
+A worker that counts from 1 to 10, emitting each number with a one-second pause. Running this loop directly on the GUI thread would freeze the app for 10 seconds. On a worker thread, the UI stays responsive — buttons still click, timers still fire, the screen still repaints.
+
+    class Counter : public QObject {
+        Q_OBJECT
+    public slots:
+        void start() {
+            for (int i = 1; i <= 10; ++i) {
+                emit countChanged(i);
+                QThread::sleep(1);     // pretend this is slow work
+            }
+            emit finished();
+        }
+    signals:
+        void countChanged(int n);
+        void finished();
+    };
+
+### Wiring it from the main window
+
+    void MainWindow::startCounting() {
+        QThread *thread  = new QThread(this);
+        Counter *counter = new Counter;       // no parent yet
+        counter->moveToThread(thread);        // now lives on worker thread
+
+        // When the thread starts, call counter->start() on the worker thread
+        connect(thread,  &QThread::started,    counter, &Counter::start);
+
+        // Each emitted number arrives back on the GUI thread automatically
+        connect(counter, &Counter::countChanged, this, &MainWindow::onCount);
+
+        // Clean shutdown once the work is done
+        connect(counter, &Counter::finished, thread,  &QThread::quit);
+        connect(counter, &Counter::finished, counter, &QObject::deleteLater);
+        connect(thread,  &QThread::finished, thread,  &QObject::deleteLater);
+
+        thread->start();
+    }
+
+    void MainWindow::onCount(int n) {
+        countLabel->setText(QString("Count: %1").arg(n));
+    }
+
+Run this and the label updates once per second while the rest of the UI stays fully responsive. That's the whole pattern in roughly 30 lines.
+
+Three things worth pointing out:
+
+- **The worker has no parent.** You can't `moveToThread` an object that has a parent — moving an object means changing its thread affinity, and Qt requires a child to live on the same thread as its parent. `deleteLater` handles cleanup once the worker signals it's finished.
+- **The `started → start` connection is what kicks the worker into action *on its own thread*.** If you just called `counter->start()` directly from the main window, it would run on the GUI thread and the whole point would be lost.
+- **All cross-thread connections use the default `Qt::AutoConnection`,** which Qt automatically promotes to `Qt::QueuedConnection` between threads. The slot runs on the receiver's thread, every time.
+
+Once this minimal pattern clicks, the real-world example in §10 is just a longer version of the same skeleton.
+
+> 📘 **Reference:** [QThread (Qt 6.1)](https://doc.qt.io/archives/qt-6.1/qthread.html) · [You're doing it wrong — Qt blog](https://www.qt.io/blog/2010/06/17/youre-doing-it-wrong)
+
+---
+
+## 10. Worked Example — Sensor Worker for Real-time Data
+
+Same skeleton as §9, applied to a real automotive case. A worker reads a simulated speed sensor 20 times per second on its own thread and emits a signal carrying the latest value. The GUI thread receives each signal — automatically queued across the thread boundary — and updates the speedometer widget.
+
+This is the production shape: instead of looping with `sleep` like the counter, the worker uses its **own `QTimer`** to drive periodic sampling. Every CAN-bus reader, GPS parser, or sensor sampler in a real Qt cluster follows this exact pattern.
+
+### The worker
+
     class SensorWorker : public QObject {
         Q_OBJECT
     public:
-        explicit SensorWorker(QObject *parent = nullptr);
+        explicit SensorWorker(QObject *parent = nullptr) : QObject(parent) {}
 
     public slots:
-        void start();        // begin sampling
-        void stop();         // stop sampling
+        void start() {
+            m_timer = new QTimer(this);         // QTimer parented on worker thread
+            m_timer->setInterval(50);           // 20 Hz
+            connect(m_timer, &QTimer::timeout,
+                    this,   &SensorWorker::doSample);
+            m_timer->start();
+        }
+
+        void stop() {
+            if (m_timer) m_timer->stop();
+        }
 
     signals:
         void speedSampled(int kmh);
 
     private slots:
-        void doSample();     // called by the worker's own QTimer
+        void doSample() {
+            // Read from real CAN / serial / shared memory here.
+            // For now, simulated:
+            const int kmh = readSpeedFromSensor();
+            emit speedSampled(kmh);
+        }
 
     private:
         QTimer *m_timer = nullptr;
     };
 
-### The worker (implementation)
-
-    // sensorworker.cpp
-    SensorWorker::SensorWorker(QObject *parent) : QObject(parent) {}
-
-    void SensorWorker::start() {
-        m_timer = new QTimer(this);
-        m_timer->setInterval(50);                   // 20 Hz
-        connect(m_timer, &QTimer::timeout,
-                this,   &SensorWorker::doSample);
-        m_timer->start();
-    }
-
-    void SensorWorker::stop() {
-        if (m_timer) m_timer->stop();
-    }
-
-    void SensorWorker::doSample() {
-        // Read from real CAN / serial / shared memory here.
-        // For now, simulated:
-        const int kmh = readSpeedFromSensor();
-        emit speedSampled(kmh);
-    }
-
 ### Wiring it up on the GUI thread
 
-    // dashboard.cpp constructor
+In your Dashboard's constructor, set up the worker and thread:
+
     auto *thread = new QThread(this);
-    auto *worker = new SensorWorker;                // no parent — we move it
+    auto *worker = new SensorWorker;            // no parent — we move it
     worker->moveToThread(thread);
 
     // When the thread starts, ask the worker to begin sampling
     connect(thread, &QThread::started,
             worker, &SensorWorker::start);
 
-    // The worker's signal — fires on the worker thread.
-    // AutoConnection automatically becomes QueuedConnection across threads,
-    // so onSpeedSampled runs on the GUI thread safely.
+    // Worker's signal fires on the worker thread, slot runs on GUI thread
     connect(worker, &SensorWorker::speedSampled,
             this,   &Dashboard::onSpeedSampled);
 
     // Clean shutdown when the dashboard is destroyed
-    connect(this, &Dashboard::destroyed, worker, &SensorWorker::stop);
-    connect(this, &Dashboard::destroyed, thread, &QThread::quit);
-    connect(thread, &QThread::finished, worker, &QObject::deleteLater);
-    connect(thread, &QThread::finished, thread, &QObject::deleteLater);
+    connect(this,   &Dashboard::destroyed, worker, &SensorWorker::stop);
+    connect(this,   &Dashboard::destroyed, thread, &QThread::quit);
+    connect(thread, &QThread::finished,    worker, &QObject::deleteLater);
+    connect(thread, &QThread::finished,    thread, &QObject::deleteLater);
 
     thread->start();
 
@@ -295,15 +411,13 @@ The worker reads a sensor 20 times per second on its own thread and emits a sign
 ### Two rules to remember
 
 1. **Never touch widgets from a worker thread.** Widget calls are GUI-thread only. The worker emits signals; the slot on the GUI thread is what touches the widget.
-2. **`moveToThread` moves the object, not its children.** Anything the worker creates *inside* a slot that runs on the worker thread (like the `QTimer` in `start()` above) will be created on that thread and behave correctly. Anything created in the constructor before `moveToThread` was called lives on whichever thread the constructor ran on.
+2. **`moveToThread` moves the object, not children created before the move.** The `QTimer` in `start()` above is created *inside a slot that runs on the worker thread*, so it lives there correctly. If you created it in the constructor (which runs on the GUI thread), it would live on the wrong thread — and `QTimer` would refuse to start.
 
-That's the entire threading pattern. Most automotive HMI workers are 50–150 lines of code.
-
-> 📘 **Reference:** [QThread (Qt 6.1)](https://doc.qt.io/archives/qt-6.1/qthread.html) · [Threads and QObjects (Qt 6.1)](https://doc.qt.io/archives/qt-6.1/threads-qobject.html) · [You're doing it wrong — Qt blog on QThread subclassing](https://www.qt.io/blog/2010/06/17/youre-doing-it-wrong)
+A complete sensor-worker setup is typically 100–200 lines of code. Once you have one working, copying the same skeleton for a CAN reader, a GPS parser, or a disk logger is mechanical — change the data type in the signal, change what `doSample` does, done.
 
 ---
 
-## 9. Official Documentation Map
+## 11. Official Documentation Map
 
 Every link is the **Qt 6.1** version (same pages exist under `doc.qt.io/qt-5/...` for Qt 5.15).
 
@@ -339,7 +453,7 @@ Every link is the **Qt 6.1** version (same pages exist under `doc.qt.io/qt-5/...
 
 ---
 
-## 10. Reference Videos
+## 12. Reference Videos
 
 | Video | Length | Why watch |
 | --- | --- | --- |
@@ -351,7 +465,7 @@ Every link is the **Qt 6.1** version (same pages exist under `doc.qt.io/qt-5/...
 
 ---
 
-## 11. Common Errors & Fixes
+## 13. Common Errors & Fixes
 
 Things that bite every Qt newcomer when working with timers and threads.
 
