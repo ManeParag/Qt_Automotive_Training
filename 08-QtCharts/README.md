@@ -1,10 +1,10 @@
-# Module 08 — QtCharts (Bar, Line, Pie)
+# Module 08 — QtCharts
 
-> Built-in chart widgets for trip statistics, energy-use breakdowns, and history views. Three series types — line, bar, pie — cover almost every chart you'll need in an automotive HMI.
+> Built-in chart widgets for trip statistics and history views. Two series types — line and bar — cover almost every chart you'll need in an automotive HMI cluster.
 
 | Phase | Level | Time | Qt modules |
 | --- | --- | --- | --- |
-| Phase 3 — Advanced Qt | Intermediate → Advanced | 2 hours | Qt Charts · Qt Widgets |
+| Phase 3 — Advanced Qt | Intermediate → Advanced | 1.5 hours | Qt Charts · Qt Widgets |
 
 ---
 
@@ -15,41 +15,40 @@
 3. [Setting Up — Adding QtCharts to a Project](#3-setting-up--adding-qtcharts-to-a-project)
 4. [Line Chart — Speed Over Time](#4-line-chart--speed-over-time)
 5. [Bar Chart — Weekly Fuel Use](#5-bar-chart--weekly-fuel-use)
-6. [Pie / Donut Chart — Energy Breakdown](#6-pie--donut-chart--energy-breakdown)
-7. [Themes, Colors, and Cluster-Friendly Styling](#7-themes-colors-and-cluster-friendly-styling)
-8. [Real-time Updates — Appending Live Data](#8-real-time-updates--appending-live-data)
-9. [Official Documentation Map](#9-official-documentation-map)
-10. [Reference Videos](#10-reference-videos)
-11. [Common Errors & Fixes](#11-common-errors--fixes)
+6. [Themes, Colors, and Cluster-Friendly Styling](#6-themes-colors-and-cluster-friendly-styling)
+7. [Real-time Updates — Appending Live Data](#7-real-time-updates--appending-live-data)
+8. [Official Documentation Map](#8-official-documentation-map)
+9. [Reference Videos](#9-reference-videos)
+10. [Common Errors & Fixes](#10-common-errors--fixes)
 
 ---
 
 ## 1. Why QtCharts Matters
 
-A cluster shows the *current* state — speed, RPM, fuel — but a good HMI also lets the driver look back. *How was my last trip? Am I using more fuel this month than last? Where does my EV's energy actually go?* Those questions need charts.
+A cluster shows the *current* state — speed, RPM, fuel — but a good HMI also lets the driver look back. *How was my last trip? Am I using more fuel this month than last?* Those questions need charts.
 
-You could draw charts yourself with `QPainter` (Module 04). But for standard line / bar / pie charts that's a lot of code for something Qt already ships. **QtCharts** is Qt's first-party charting module: data goes in via `QXxxSeries` classes, a `QChart` arranges them with axes and a legend, and a `QChartView` widget displays the result inside any layout.
+You could draw charts yourself with `QPainter` (Module 04). But for standard line and bar charts that's a lot of code for something Qt already ships. **QtCharts** is Qt's first-party charting module: data goes in via `QXxxSeries` classes, a `QChart` arranges them with axes and a legend, and a `QChartView` widget displays the result inside any layout.
 
-If Module 04 taught you to paint custom gauges, QtCharts is what you reach for when the data is a *series of values* and you want a chart that looks like a chart — fast, themed, interactive (zoom / scroll), and identical across Linux, Windows, and QNX.
+If Module 04 taught you to paint custom gauges, QtCharts is what you reach for when the data is a *series of values* and you want a chart that looks like a chart — fast, themed, and identical across Linux, Windows, and QNX.
 
 ---
 
 ## 2. QtCharts in Automotive HMIs
 
-What charts get used for in a real cluster or IVI:
+What charts get used for in a real cluster:
 
 | Use case | Chart type | Series class |
 | --- | --- | --- |
 | Speed history over current trip | Line | `QLineSeries` / `QSplineSeries` |
 | Fuel consumption per week | Bar | `QBarSeries` |
-| EV energy use breakdown (drive / climate / lights) | Pie / donut | `QPieSeries` |
 | Average fuel economy trend (12 months) | Spline | `QSplineSeries` |
 | Tyre-pressure readings per wheel | Bar (grouped) | `QBarSeries` with 4 sets |
-| Range estimate over time | Area | `QAreaSeries` |
 | Battery state-of-charge through the day | Line | `QLineSeries` |
-| Service-cost breakdown by category | Pie | `QPieSeries` |
+| Distance per drive mode (Eco / Comfort / Sport) | Bar | `QBarSeries` |
+| Service-cost trend over months | Line | `QLineSeries` |
+| Trip duration vs. distance (last 10 trips) | Bar | `QBarSeries` |
 
-Pattern: anything that's a **sequence of (x, y) pairs** is a line or bar; anything that's **parts of a whole** is a pie. QtCharts ships all of them.
+Pattern: anything that's a **sequence of (x, y) pairs over time** is a line; anything that's **a value per named category** is a bar. Between the two you've covered the practical needs of an automotive history screen.
 
 A sample line chart looks like this in a real cluster trip-stats screen:
 
@@ -172,40 +171,7 @@ For grouped bars (e.g. front-left / front-right / rear-left / rear-right tyre pr
 
 ---
 
-## 6. Pie / Donut Chart — Energy Breakdown
-
-For EV consumption screens — *where did my battery go?*
-
-    auto *series = new QPieSeries();
-    series->append("Drive",   65.0);
-    series->append("Climate", 14.0);
-    series->append("Lights",   8.0);
-    series->append("Audio",    3.0);
-    series->append("Idle",    10.0);
-
-    // Highlight the largest slice
-    auto *largest = series->slices().at(0);
-    largest->setExploded(true);
-    largest->setLabelVisible(true);
-    largest->setBrush(QColor("#00d4ff"));
-
-    // Make it a donut rather than a full pie
-    series->setHoleSize(0.45);
-
-    auto *chart = new QChart();
-    chart->addSeries(series);
-    chart->setTitle("Energy use — last trip");
-
-    auto *chartView = new QChartView(chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
-
-`setHoleSize` is the difference between a pie and a donut. 0.0 = full pie, 0.5 = thick donut, 0.8 = thin ring (good for compact cluster screens).
-
-> 📘 **Reference:** [QPieSeries (Qt 6.1)](https://doc.qt.io/archives/qt-6.1/qpieseries.html) · [QPieSlice (Qt 6.1)](https://doc.qt.io/archives/qt-6.1/qpieslice.html)
-
----
-
-## 7. Themes, Colors, and Cluster-Friendly Styling
+## 6. Themes, Colors, and Cluster-Friendly Styling
 
 Default QtCharts looks like a desktop spreadsheet — bright white background, blue accents. Wrong for a dark cluster. Two ways to fix it.
 
@@ -242,7 +208,7 @@ For maximum control, you can also style `QChartView` with QSS (Module 07) — bu
 
 ---
 
-## 8. Real-time Updates — Appending Live Data
+## 7. Real-time Updates — Appending Live Data
 
 Charts get useful in clusters when they update *as the driver drives*. Hook a `QTimer` (Module 05) or sensor signal up to an `append()` call on the series.
 
@@ -274,7 +240,7 @@ A `QTimer` firing at 30 Hz with `replace()` keeps the GUI thread smooth even wit
 
 ---
 
-## 9. Official Documentation Map
+## 8. Official Documentation Map
 
 Every link is the **Qt 6.1** version (same pages exist under `doc.qt.io/qt-5/...` for Qt 5.15).
 
@@ -293,7 +259,6 @@ Every link is the **Qt 6.1** version (same pages exist under `doc.qt.io/qt-5/...
 | --- | --- |
 | [QLineSeries](https://doc.qt.io/archives/qt-6.1/qlineseries.html) · [QSplineSeries](https://doc.qt.io/archives/qt-6.1/qsplineseries.html) | Line and curved-line series |
 | [QBarSeries](https://doc.qt.io/archives/qt-6.1/qbarseries.html) · [QBarSet](https://doc.qt.io/archives/qt-6.1/qbarset.html) | Bar series and one-bar data sets |
-| [QPieSeries](https://doc.qt.io/archives/qt-6.1/qpieseries.html) · [QPieSlice](https://doc.qt.io/archives/qt-6.1/qpieslice.html) | Pie / donut series and slices |
 | [QValueAxis](https://doc.qt.io/archives/qt-6.1/qvalueaxis.html) · [QBarCategoryAxis](https://doc.qt.io/archives/qt-6.1/qbarcategoryaxis.html) | Numeric and category axes |
 | [QDateTimeAxis](https://doc.qt.io/archives/qt-6.1/qdatetimeaxis.html) | Time-based X-axis |
 
@@ -303,23 +268,21 @@ Every link is the **Qt 6.1** version (same pages exist under `doc.qt.io/qt-5/...
 | --- | --- |
 | [Line Chart Example](https://doc.qt.io/archives/qt-6.1/qtcharts-linechart-example.html) | Step-by-step line chart |
 | [Bar Chart Example](https://doc.qt.io/archives/qt-6.1/qtcharts-barchart-example.html) | Step-by-step bar chart |
-| [Donut Chart Example](https://doc.qt.io/archives/qt-6.1/qtcharts-donutchart-example.html) | Donut with custom hole size |
 | [Dynamic Spline Example](https://doc.qt.io/archives/qt-6.1/qtcharts-dynamicspline-example.html) | Real-time appending data |
 
 ---
 
-## 10. Reference Videos
+## 9. Reference Videos
 
 | Video | Length | Why watch |
 | --- | --- | --- |
 | [Qt Charts — Getting Started](https://www.youtube.com/watch?v=BlSEBXY7vh0) | ~15 min | First chart, line and bar |
 | [Real-time Line Chart in Qt](https://www.youtube.com/watch?v=ufdSt36LCx0) | ~20 min | Live append with QTimer |
 | [Qt Charts Themes Walkthrough](https://www.youtube.com/watch?v=l3DfFhRH7-Y) | ~10 min | Dark theme, custom colours |
-| [Pie and Donut Charts in Qt C++](https://www.youtube.com/watch?v=jjTPnsImR6c) | ~12 min | QPieSeries variations |
 
 ---
 
-## 11. Common Errors & Fixes
+## 10. Common Errors & Fixes
 
 The things that bite every Qt newcomer when working with QtCharts.
 
@@ -357,20 +320,19 @@ You never trim. The series keeps growing, memory and render time grow with it. *
 
 You set the series colors *before* applying a theme. Themes override series brushes. **Fix:** call `chart->setTheme(...)` first, then set series-specific colors via `setPen` and `setBrush`.
 
-### `QPieSeries` slice labels overlap
-
-Default labels show "Drive" but for small slices they collide. **Fix:**
-
-    slice->setLabelPosition(QPieSlice::LabelOutside);
-    slice->setLabelVisible(slice->percentage() > 0.05);   // hide tiny slices
-
 ### Build error: `'QChart' was not declared in this scope`
 
 Missing include. Add `#include <QtCharts>` (brings everything in) or specific headers like `#include <QChart>`, `#include <QChartView>`, `#include <QLineSeries>`.
 
 ### Chart axes ignore my labels colour
 
-Some theme combinations override axis label colors. **Fix:** call `setLabelsColor` *after* `setTheme`, or use the manual styling approach in §7 without a theme.
+Some theme combinations override axis label colors. **Fix:** call `setLabelsColor` *after* `setTheme`, or use the manual styling approach in §6 without a theme.
+
+### Bar widths look wrong when there are few categories
+
+Default bar width fills the category slot evenly. If you have only 2 or 3 categories the bars stretch wide. **Fix:**
+
+    series->setBarWidth(0.4);   // 40 % of category slot width
 
 ---
 
