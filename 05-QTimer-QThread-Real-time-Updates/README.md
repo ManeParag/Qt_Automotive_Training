@@ -4,7 +4,11 @@
 
 | Phase | Level | Time | Qt modules |
 | --- | --- | --- | --- |
+<<<<<<< HEAD:05-QTimer-QThread-Real-time-Updates/README.md
 | Phase 2 — Intermediate Qt | Intermediate | 3 hours | Qt Core · Qt Widgets |
+=======
+| Phase 2 — Qt Fundamentals | Intermediate | 3 hours | Qt Core · Qt Widgets |
+>>>>>>> 99de9a4d1f407164e3ee3217441f082964694323:05-QTimer-Real-time-Updates/README.md
 
 ---
 
