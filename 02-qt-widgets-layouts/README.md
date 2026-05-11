@@ -111,6 +111,82 @@ Qt ships ~50 widget classes. You'll use about a dozen of them every day. Group t
 | `QTableWidget` | rows × columns | trip statistics |
 | `QTreeWidget` | hierarchical | settings menu |
 
+### Item-view widgets in practice
+
+These three widgets cover most of the "show a collection of data" need in an HMI. `QListWidget` and `QTableWidget` are the ones you'll reach for in Week 1 — they're the easiest way to put data on screen.
+
+#### `QListWidget` — a flat list of items
+
+Use it when the data is one item per row and the items are roughly the same shape. Recent destinations, paired Bluetooth devices, call log entries.
+
+    QListWidget *recents = new QListWidget(this);
+    recents->addItem("Home — 8 km");
+    recents->addItem("Office — 15 km");
+    recents->addItem("Airport — 42 km");
+    recents->addItem("Mall — 6 km");
+
+    // React when the driver taps an entry
+    connect(recents, &QListWidget::itemClicked,
+            this,    &Navigation::onDestinationTapped);
+
+What it looks like on screen:
+
+    ┌──────────────────────────────┐
+    │  Recent Destinations         │
+    ├──────────────────────────────┤
+    │  Home — 8 km                 │
+    │  Office — 15 km              │
+    │  Airport — 42 km             │
+    │  Mall — 6 km                 │
+    └──────────────────────────────┘
+
+Each row is a `QListWidgetItem`. You can give it an icon (`setIcon`), make it checkable (`setFlags(Qt::ItemIsUserCheckable)`), or attach hidden data via `setData(Qt::UserRole, ...)` — useful when the visible text is a friendly name but you need an ID behind the scenes.
+
+#### `QTableWidget` — rows × columns
+
+Use it when each item has multiple fields you want aligned in columns. Trip statistics, tyre-pressure readouts per wheel, scheduled service records.
+
+    QTableWidget *trips = new QTableWidget(3, 3, this);   // 3 rows, 3 cols
+    trips->setHorizontalHeaderLabels({"Date", "Distance", "Avg Speed"});
+
+    trips->setItem(0, 0, new QTableWidgetItem("10 May"));
+    trips->setItem(0, 1, new QTableWidgetItem("42 km"));
+    trips->setItem(0, 2, new QTableWidgetItem("38 km/h"));
+
+    trips->setItem(1, 0, new QTableWidgetItem("09 May"));
+    trips->setItem(1, 1, new QTableWidgetItem("28 km"));
+    trips->setItem(1, 2, new QTableWidgetItem("45 km/h"));
+
+    trips->setItem(2, 0, new QTableWidgetItem("08 May"));
+    trips->setItem(2, 1, new QTableWidgetItem("110 km"));
+    trips->setItem(2, 2, new QTableWidgetItem("62 km/h"));
+
+    trips->resizeColumnsToContents();
+
+What it looks like on screen:
+
+    ┌──────────┬───────────┬─────────────┐
+    │  Date    │ Distance  │ Avg Speed   │
+    ├──────────┼───────────┼─────────────┤
+    │ 10 May   │ 42 km     │ 38 km/h     │
+    │ 09 May   │ 28 km     │ 45 km/h     │
+    │ 08 May   │ 110 km    │ 62 km/h     │
+    └──────────┴───────────┴─────────────┘
+
+Coordinates are `(row, column)`, both **zero-indexed**. Forget that and you'll get a runtime warning and an empty table.
+
+#### When `QListWidget` / `QTableWidget` stop being enough
+
+Both store their data *inside* the widget itself. That's fine for small, fixed lists — say, ≤ 100 items that change occasionally. It breaks down when:
+
+- The data grows large (thousands of CAN log entries) — performance drops, scrolling stutters.
+- The data lives somewhere else (a database, a network feed, a model class) and you'd be copying it twice.
+- You want the same data shown in two views at once (e.g. a list *and* a chart) — they have to stay in sync manually.
+
+When you hit any of these, you graduate to **Model/View** — `QListView` + `QTableView` + a model class (`QAbstractListModel` / `QAbstractTableModel`) that holds the data once and feeds any number of views. Covered in **Module 11 — Model/View Basics**.
+
+> 📘 **Reference:** [QListWidget (Qt 6.1)](https://doc.qt.io/archives/qt-6.1/qlistwidget.html) · [QTableWidget (Qt 6.1)](https://doc.qt.io/archives/qt-6.1/qtablewidget.html) · [Model/View Programming (Qt 6.1)](https://doc.qt.io/archives/qt-6.1/model-view-programming.html)
+
 ### Minimal widget snippet
 
 Creating a widget is just a constructor call. The parent pointer (`this`, the window) is what makes it appear:
@@ -351,6 +427,14 @@ By default Qt adds 9 px margins and ~6 px spacing. Tune with `layout->setContent
 ### Custom widget shows in code but blank in Designer
 
 You forgot to **promote** the placeholder `QWidget` to your custom class. Right-click the placeholder in Designer → *Promote to…* → enter class name and header file.
+
+### `QTableWidget` shows but cells are empty
+
+You called `new QTableWidget(this)` without telling it how many rows and columns it has, or you forgot to call `setItem()` for the cells. **Fix:** either `setRowCount()` + `setColumnCount()` first, or use the constructor `new QTableWidget(rows, cols, this)`. Then `setItem(row, col, new QTableWidgetItem("text"))` for each cell.
+
+### `QListWidget` shows items but `itemClicked` slot never fires
+
+You connected to the wrong signal, or to no signal at all. `QListWidget` emits **`itemClicked(QListWidgetItem*)`** when a row is tapped — note the signal takes an item pointer, so your slot signature must match: `void onItemClicked(QListWidgetItem *item)`. Also useful: `currentRowChanged(int row)` for keyboard/arrow navigation.
 
 ### Build error: `'QHBoxLayout' was not declared in this scope`
 
