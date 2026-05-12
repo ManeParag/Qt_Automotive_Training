@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <!-- Background -->
+  <rect width="500" height="500" fill="#0a0e14"/>
+
+  <!-- Outer bezel -->
+  <circle cx="250" cy="250" r="220" fill="#15191f" stroke="#2a2f38" stroke-width="3"/>
+  <circle cx="250" cy="250" r="200" fill="#0a0e14" stroke="#1f242c" stroke-width="1"/>
+
+  <!-- Track arc (full 270° sweep, from 0 km/h to 240 km/h) -->
+  <path d="M 136.86 363.14 A 160 160 0 1 1 363.14 363.14"
+        fill="none" stroke="#1f2630" stroke-width="14" stroke-linecap="round"/>
+
+  <!-- Progress arc (0 to 120 km/h = 135° of sweep) -->
+  <path d="M 136.86 363.14 A 160 160 0 0 1 250 90"
+        fill="none" stroke="#00d4ff" stroke-width="14" stroke-linecap="round"/>
+
+  <!-- Red zone arc (200 to 240 km/h = 45°) -->
+  <path d="M 410 250 A 160 160 0 0 1 363.14 363.14"
+        fill="none" stroke="#ff3344" stroke-width="14" stroke-linecap="round"/>
+
+  <!-- Major tick marks at 22.5° intervals -->
+  <g stroke="#8a96a8" stroke-width="2.5" stroke-linecap="round">
+    <line x1="250" y1="75" x2="250" y2="95" transform="rotate(-135 250 250)"/>
+    <line x1="250" y1="75" x2="250" y2="95" transform="rotate(-112.5 250 250)"/>
+    <line x1="250" y1="75" x2="250" y2="95" transform="rotate(-90 250 250)"/>
+    <line x1="250" y1="75" x2="250" y2="95" transform="rotate(-67.5 250 250)"/>
+    <line x1="250" y1="75" x2="250" y2="95" transform="rotate(-45 250 250)"/>
+    <line x1="250" y1="75" x2="250" y2="95" transform="rotate(-22.5 250 250)"/>
+    <line x1="250" y1="75" x2="250" y2="95" transform="rotate(0 250 250)"/>
+    <line x1="250" y1="75" x2="250" y2="95" transform="rotate(22.5 250 250)"/>
+    <line x1="250" y1="75" x2="250" y2="95" transform="rotate(45 250 250)"/>
+    <line x1="250" y1="75" x2="250" y2="95" transform="rotate(67.5 250 250)"/>
+  </g>
+  <!-- Red zone major ticks -->
+  <g stroke="#ff5566" stroke-width="2.5" stroke-linecap="round">
+    <line x1="250" y1="75" x2="250" y2="95" transform="rotate(90 250 250)"/>
+    <line x1="250" y1="75" x2="250" y2="95" transform="rotate(112.5 250 250)"/>
+    <line x1="250" y1="75" x2="250" y2="95" transform="rotate(135 250 250)"/>
+  </g>
+
+  <!-- Minor tick marks between majors -->
+  <g stroke="#4a5566" stroke-width="1.5" stroke-linecap="round">
+    <line x1="250" y1="78" x2="250" y2="90" transform="rotate(-123.75 250 250)"/>
+    <line x1="250" y1="78" x2="250" y2="90" transform="rotate(-101.25 250 250)"/>
+    <line x1="250" y1="78" x2="250" y2="90" transform="rotate(-78.75 250 250)"/>
+    <line x1="250" y1="78" x2="250" y2="90" transform="rotate(-56.25 250 250)"/>
+    <line x1="250" y1="78" x2="250" y2="90" transform="rotate(-33.75 250 250)"/>
+    <line x1="250" y1="78" x2="250" y2="90" transform="rotate(-11.25 250 250)"/>
+    <line x1="250" y1="78" x2="250" y2="90" transform="rotate(11.25 250 250)"/>
+    <line x1="250" y1="78" x2="250" y2="90" transform="rotate(33.75 250 250)"/>
+    <line x1="250" y1="78" x2="250" y2="90" transform="rotate(56.25 250 250)"/>
+    <line x1="250" y1="78" x2="250" y2="90" transform="rotate(78.75 250 250)"/>
+    <line x1="250" y1="78" x2="250" y2="90" transform="rotate(101.25 250 250)"/>
+    <line x1="250" y1="78" x2="250" y2="90" transform="rotate(123.75 250 250)"/>
+  </g>
+
+  <!-- Numeric labels (positioned via computed geometry, dy shift for vertical centering) -->
+  <g fill="#c8d2e0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="500" text-anchor="middle">
+    <text x="158" y="347">0</text>
+    <text x="130" y="305">20</text>
+    <text x="120" y="256">40</text>
+    <text x="130" y="206">60</text>
+    <text x="158" y="164">80</text>
+    <text x="200" y="135">100</text>
+    <text x="250" y="125">120</text>
+    <text x="300" y="135">140</text>
+    <text x="342" y="164">160</text>
+    <text x="370" y="206">180</text>
+  </g>
+  <g fill="#ff7788" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="500" text-anchor="middle">
+    <text x="380" y="256">200</text>
+    <text x="370" y="305">220</text>
+    <text x="342" y="347">240</text>
+  </g>
+
+  <!-- Needle: pointing straight up at 120 km/h (rotation 0°) -->
+  <g transform="rotate(0 250 250)">
+    <polygon points="250,100 244,250 256,250" fill="#ff3344" opacity="0.4" transform="translate(2,2)"/>
+    <polygon points="250,100 244,250 256,250" fill="#ff3344"/>
+    <polygon points="244,250 256,250 252,275 248,275" fill="#aa2030"/>
+  </g>
+
+  <!-- Centre hub -->
+  <circle cx="250" cy="250" r="18" fill="#15191f" stroke="#00d4ff" stroke-width="2.5"/>
+  <circle cx="250" cy="250" r="6" fill="#00d4ff"/>
+
+  <!-- Digital readout -->
+  <text x="250" y="380" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" text-anchor="middle" letter-spacing="2">120</text>
+
+  <!-- Units label -->
+  <text x="250" y="412" fill="#8a96a8" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="500" text-anchor="middle" letter-spacing="3">KM/H</text>
+
+  <!-- Sub-label -->
+  <text x="250" y="455" fill="#4a5566" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="400" text-anchor="middle" letter-spacing="2">SPEED</text>
+</svg>
