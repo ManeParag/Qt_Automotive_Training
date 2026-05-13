@@ -2,6 +2,7 @@
 #include "widget.h"
 
 #include <QApplication>
+#include <QtSql/QSqlDatabase>
 
 int main(int argc, char *argv[])
 {
