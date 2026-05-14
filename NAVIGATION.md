@@ -20,6 +20,14 @@
 | 10  | [Final Project — Full HMI Integration](./10-final-project/)     | 4 Project      | Project      | 1 day  |
 
 ---
+---
+
+## 📊 Progress Tracking
+
+| Resource | Purpose |
+| :--- | :--- |
+| [Training Plan & Progress Tracker](./tracking/Qt_Automotive_HMI_Training_Plan.xlsx) | Master Excel — daily plan, per-trainee tracker, practice tasks, references, final project |
+| [Tracking README](./tracking/README.md) | How to read and update the tracker |
 
 ## 🗺️ Recommended Order
 
